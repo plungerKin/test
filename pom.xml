@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.mercury</groupId>
+    <artifactId>mercury-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>mercury-service</module>
+    </modules>
+    <packaging>pom</packaging>
+
+    <name>mercury-parent</name>
+    <description>mercury-parent</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.14.RELEASE</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <pagehelper-spring-boot-starter.version>1.2.5</pagehelper-spring-boot-starter.version>
+        <mapper-spring-boot-starter.version>2.0.3</mapper-spring-boot-starter.version>
+        <mybatis-spring-boot-starter.version>1.3.2</mybatis-spring-boot-starter.version>
+        <jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
+        <disruptor.version>3.4.1</disruptor.version>
+        <spring.version>4.3.16.RELEASE</spring.version>
+        <poi.version>3.12</poi.version>
+
+    </properties>
+
+    <!-- 统一管理被引用的子模块版本 -->
+    <dependencyManagement>
+        <dependencies>
+            <!--<dependency>-->
+            <!--<groupId>com.zy.ecoupon</groupId>-->
+            <!--<artifactId>zy-ecoupon-common</artifactId>-->
+            <!--<version>${project.version}</version>-->
+            <!--</dependency>-->
+            <!--<dependency>-->
+                <!--<groupId>com.zy.ecoupon</groupId>-->
+                <!--<artifactId>zy-ecoupon-service</artifactId>-->
+                <!--<version>${project.version}</version>-->
+            <!--</dependency>-->
+
+            <!--<dependency>-->
+                <!--<groupId>org.apache.poi</groupId>-->
+                <!--<artifactId>poi-ooxml</artifactId>-->
+                <!--<version>${poi.version}</version>-->
+            <!--</dependency>-->
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 发布私有仓库 -->
+    <!--<distributionManagement>-->
+    <!--<repository>-->
+    <!--<id>deploy-releases</id>-->
+    <!--<name>Zy Nexus Releases</name>-->
+    <!--<url>http://nexus.zy.com/nexus/content/repositories/releases/</url>-->
+    <!--</repository>-->
+    <!--<snapshotRepository>-->
+    <!--<id>deploy-snapshots</id>-->
+    <!--<name>Zy Nexus Snapshot</name>-->
+    <!--<url>http://nexus.zy.com/nexus/content/repositories/snapshots/</url>-->
+    <!--</snapshotRepository>-->
+    <!--</distributionManagement>-->
+    <!--<repositories>-->
+    <!--<repository>-->
+    <!--<id>nexus</id>-->
+    <!--<name>Team Nexus Repository</name>-->
+    <!--<url>http://nexus.zy.com/nexus/content/groups/public</url>-->
+    <!--</repository>-->
+    <!--</repositories>-->
+
+    <repositories>
+        <repository>
+            <id>zy nexus</id>
+            <name>Team Nexus Repository</name>
+            <url>http://nexus.zy.com/nexus/content/groups/public</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <!-- 如有Nexus私服, 取消注释并指向正确的服务器地址 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus</id>
+            <name>Team Nexus Repository</name>
+            <!-- <url>http://172.20.10.5:8081/nexus/content/groups/public</url> -->
+            <url>http://nexus.zy.com/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <resources>
+            <resource>
+                <!-- 打包 mapper 文件 -->
+                <directory>src/main/java/</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources/</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+(1).根节点Configuration有两个属性:status和monitorinterval,有两个子节点:Appenders和Loggers(表明可以定义多个Appender和Logger).
+
+　　　　　　　status用来指定log4j本身的打印日志的级别.
+
+　　　　　　　monitorinterval用于指定log4j自动重新配置的监测间隔时间，单位是s,最小是5s.
+-->
+<Configuration status="WARN" monitorInterval="60">
+    <!--日志级别：TRACE < DEBUG < INFO < WARN < ERROR < FATAL-->
+    <Properties>
+        <!--精简系统日志，除了sql外一律使用INFO级别-->
+        <property name="SQL_LEVEL">DEBUG</property>
+        <property name="SYSTEM_LEVEL">INFO</property>
+    </Properties>
+<!--(2).Appenders节点，常见的有三种子节点:Console、RollingFile、File.-->
+    <Appenders>
+
+        <!--
+        <filter>:
+            过滤器，执行一个过滤器会有返回个枚举值，即DENY，NEUTRAL，ACCEPT其中之一。返回DENY，日志将立即被抛弃不再经过其他过滤器；返回NEUTRAL，有序列表里的下个过滤器过接着处理日志；返回ACCEPT，日志会被立即处理，不再经过剩余过滤器。
+            过滤器被添加到<Appender> 中，为<Appender> 添加一个或多个过滤器后，可以用任意条件对日志进行过滤。<Appender> 有多个过滤器时，按照配置顺序执行。
+        过滤器有好几个:
+            1.LevelFilter： 级别过滤器，根据日志级别进行过滤。如果日志级别等于配置级别，过滤器会根据onMath 和 onMismatch接收或拒绝日志。有以下子节点：
+                <level>:设置过滤级别
+                <onMatch>:用于配置符合过滤条件的操作
+                <onMismatch>:用于配置不符合过滤条件的操作
+            2.ThresholdFilter： 临界值过滤器，过滤掉低于指定临界值的日志。当日志级别等于或高于临界值时，过滤器返回NEUTRAL；当日志级别低于临界值时，日志会被拒绝。
+                例如：过滤掉所有低于INFO级别的日志。
+        -->
+
+        <!-- 控制台输出配置 -->
+        <Console name="Console">
+            <!-- 控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} %highlight{%-5level} [%t] [%class{80}:%L:%M] - %msg%xEx%n"/>
+        </Console>
+
+        <!--
+            正常日志滚动输出 RollingRandomAccessFile异步的方式打印输出日志
+            Rolling的意思是当满足一定条件后，就重命名原日志文件用于备份，并从新生成一个新的日志文件。例如需求是每天生成一个日志文件，但是如果一天内的日志文件体积已经超过1G，就从新生成，两个条件满足一个即可。这在log4j 1.x原生功能中无法实现，在log4j2中就很简单了。
+        -->
+        <RollingRandomAccessFile name="Service"
+                                 fileName="${sys:LOG_PATH}/faker_server.log"
+                                 filePattern="${sys:LOG_PATH}/faker_server_%d{yyyy-MM-dd}_%i.log">
+
+            <!-- 临界值过滤器，过滤掉低于指定临界值的日志。当日志级别等于或高于临界值时，过滤器返回NEUTRAL；当日志级别低于临界值时，日志会被拒绝-->
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} %-5level [%t] [%class{80}:%L:%M] - %msg%xEx%n"/>
+
+            <!--Policies：策略，表示日志什么时候应该产生新日志，可以有时间策略和大小策略等-->
+            <Policies>
+                <!--可以通过SizeBasedTriggeringPolicy trigger来让文件不至于过大，在我的配置中指定文件尺寸为100，如果超过，就“卷动”-->
+                <SizeBasedTriggeringPolicy size="30M"/>
+                <!--
+                    TimeBasedTriggeringPolicy  这个配置需要和filePattern结合使用，注意filePattern中配置的文件重命名规则是${log_path}/zcrTest%d{yyyy-MM-dd}.log，最小的时间粒度是dd，即分钟，TimeBasedTriggeringPolicy指定的size是1，结合起来就是每一天生成一个新文件。如果改成%d{yyyy-MM-dd HH}，最小粒度为小时，则每一个小时生成一个文件。
+                -->
+                <!--<TimeBasedTriggeringPolicy  interval="1"/>-->
+            </Policies>
+            <!--DefaultRolloverStrategy  指定最多保存的文件个数-->
+            <DefaultRolloverStrategy max="500"/>
+
+        </RollingRandomAccessFile>
+
+        <!-- 错误日志滚动输出 -->
+        <RollingRandomAccessFile name="Error"
+                                 fileName="${sys:LOG_PATH}/faker_error.log"
+                                 filePattern="${sys:LOG_PATH}/faker_error_%d{yyyy-MM-dd}_%i.log">
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} %-5level [%t] [%class{80}:%L:%M] - %msg%xEx%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="30MB"/>
+                <TimeBasedTriggeringPolicy interval="6"/>
+                <modulate>true</modulate>
+            </Policies>
+            <DefaultRolloverStrategy max="50"/>
+        </RollingRandomAccessFile>
+
+    </Appenders>
+
+    <Loggers>
+        <!--sql-->
+        <logger name="com.apache.ibatis" level="${SQL_LEVEL}"/>
+        <logger name="java.sql" level="${SQL_LEVEL}"/>
+
+        <!--system-->
+        <logger name="org.springframework" level="${SYSTEM_LEVEL}"/>
+        <logger name="org.hibernate" level="${SYSTEM_LEVEL}"/>
+        <logger name="org.apache.commons" level="${SYSTEM_LEVEL}"/>
+        <logger name="net.sf.jxls" level="${SYSTEM_LEVEL}"/>
+        <logger name="tk.mybatis" level="${SYSTEM_LEVEL}"/>
+        <logger name="org.apache.shiro" level="${SYSTEM_LEVEL}"/>
+        <logger name="net.sf.ehcache" level="${SYSTEM_LEVEL}"/>
+        <logger name="org.apache.http" level="${SYSTEM_LEVEL}"/>
+        <logger name="org.eclipse" additivity="${SYSTEM_LEVEL}"/>
+
+        <!--使用异步Logger方式输出日志-->
+        <AsyncLogger name="AsyncLogger" level="TRACE" includeLocation="true">
+            <Appender-Ref ref="Console"/>
+            <Appender-Ref ref="Service"/>
+            <Appender-Ref ref="Error"/>
+        </AsyncLogger>
+
+        <Root level="TRACE">
+            <Appender-Ref ref="Console"/>
+            <Appender-Ref ref="Service"/>
+            <Appender-Ref ref="Error"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
